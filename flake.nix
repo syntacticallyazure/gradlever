@@ -1,20 +1,37 @@
 {
-  description = "script that prints the gradle version in the repository";
+  description = "Script that prints the Gradle version in the repository";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
-  outputs = { nixpkgs, ... }: let
-    forAllSystems = nixpkgs.lib.genAttrs [
-      "x86_64-linux"
-      "aarch64-linux"
-      "x86_64-darwin"
-      "aarch64-darwin"
-    ];
-  in {
-    packages = forAllSystems (system: let
-      pkgs = nixpkgs.legacyPackages.${system};
-    in {
-      default = import ./package.nix { inherit pkgs; };
-    });
-  };
+  outputs =
+    { nixpkgs, ... }:
+    let
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+        "x86_64-darwin"
+        "aarch64-darwin"
+      ];
+    in
+    {
+      packages = nixpkgs.lib.genAttrs systems (
+        system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+        in
+        {
+          default = pkgs.writeShellApplication {
+            name = "gradlever";
+
+            runtimeInputs = [
+              pkgs.python3
+            ];
+
+            text = ''
+              exec python3 ${./gradlever.py} "$@"
+            '';
+          };
+        }
+      );
+    };
 }
