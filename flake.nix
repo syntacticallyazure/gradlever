@@ -28,7 +28,7 @@
             ];
 
             text = ''
-              exec python3 ${./src/gradlever.py} "$@"
+              python ${./src/gradlever.py} "$@"
             '';
           };
         }
